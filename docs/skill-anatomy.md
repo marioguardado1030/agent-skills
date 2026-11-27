@@ -28,8 +28,16 @@ description: Guides agents through [task/workflow]. Use when [specific trigger c
 ```
 
 **Rules:**
-- `name`: Lowercase, hyphen-separated. Must match the directory name.
-- `description`: Start with what the skill does in third person, then include one or more clear "Use when" trigger conditions. Include both *what* and *when*. Maximum 1024 characters.
+- `name`: 1-64 characters. Lowercase letters, digits, and hyphens only (`a-z`, `0-9`, `-`). Must not start or end with a hyphen or contain consecutive hyphens (`--`). Must match the directory name.
+- `description`: Start with what the skill does in third person, then include one or more clear "Use when" trigger conditions. Include both *what* and *when*. 1-1024 characters.
+
+**Optional fields** (defined by the [Agent Skills specification](https://agentskills.io/specification); omit unless needed):
+- `license`: License name or a bundled license file.
+- `compatibility`: Environment requirements (product, system packages, network access). 1-500 characters. Most skills don't need it.
+- `metadata`: Map of string keys to string values for client-specific properties.
+- `allowed-tools`: Space-separated list of pre-approved tools. Experimental; support varies by agent.
+
+Do not add other top-level frontmatter keys.
 
 **Why this matters:** Agents discover skills by reading descriptions. The description is injected into the system prompt, so it must tell the agent both what the skill provides and when to activate it. Do not summarize the workflow — if the description contains process steps, the agent may follow the summary instead of reading the full skill.
 
@@ -111,7 +119,7 @@ If a skill does not need runnable helpers, do not create an empty `scripts/` dir
 
 Skills load on demand: only the skill name and description sit in context at startup. The full `SKILL.md` loads only when an agent decides the skill is relevant. To keep that load cheap:
 
-- **Keep `SKILL.md` under 500 lines.** Move detailed reference material into supporting files.
+- **Keep `SKILL.md` under 500 lines and roughly 5,000 tokens.** Move detailed reference material into supporting files.
 - **Write specific descriptions.** A precise description helps the agent activate the skill at the right moment and skip it otherwise.
 - **Use progressive disclosure.** Reference supporting files that are read only when the workflow reaches them.
 - **Prefer scripts over inline code.** Executing a script consumes no context; only its output does. Inline code blocks are paid for on every load.
@@ -142,7 +150,7 @@ When a skill ships runnable helpers under `scripts/`, each script follows these 
 - Skill directories: `lowercase-hyphen-separated`
 - Skill files: `SKILL.md` (always uppercase)
 - Supporting files: `lowercase-hyphen-separated.md`
-- References: stored in `references/` at the project root, not inside skill directories
+- References: stored in `references/` at the project root, not inside skill directories. This is a project convention; the spec also allows per-skill `references/` and `assets/` directories, so skills from other sources may use them.
 
 ## Cross-Skill References
 
@@ -162,6 +170,7 @@ Required:
 - A `skills/<skill-name>/SKILL.md` file
 - Valid YAML frontmatter with `name` and `description`
 - A description that includes both what the skill does and when to use it
+- Passes the official validator: `skills-ref validate skills/<skill-name>` (install from [agentskills/agentskills](https://github.com/agentskills/agentskills/tree/main/skills-ref))
 
 Recommended:
 
